@@ -21,7 +21,7 @@ class Settings(BaseSettings):
     pii_filter: str = "noop"
     queue_backend: str = "background_tasks"
 
-    model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
+    model_config = {"env_file": ".env", "env_file_encoding": "utf-8", "extra": "ignore"}
 
 
 settings = Settings()

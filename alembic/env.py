@@ -18,6 +18,10 @@ config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
+# Override URL from app settings so DATABASE_URL env var is respected
+from app.config import settings  # noqa: E402
+config.set_main_option("sqlalchemy.url", settings.database_url)
+
 target_metadata = Base.metadata
 
 
