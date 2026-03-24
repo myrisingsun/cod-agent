@@ -8,7 +8,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 COPY pyproject.toml .
-RUN pip install --no-cache-dir -e ".[dev]"
+# Install base + dev deps only; heavy ML groups (parsing, rag, pii) added per sprint
+ARG EXTRA_GROUPS="dev"
+RUN pip install --no-cache-dir -e ".[$EXTRA_GROUPS]"
 
 COPY . .
 
