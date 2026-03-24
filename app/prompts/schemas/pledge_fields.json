@@ -1,0 +1,36 @@
+{
+  "type": "object",
+  "properties": {
+    "contract_number": {"type": ["string", "null"]},
+    "contract_date": {"type": ["string", "null"]},
+    "pledgee": {"type": ["string", "null"]},
+    "pledgor": {"type": ["string", "null"]},
+    "pledgor_inn": {"type": ["string", "null"]},
+    "pledge_subject": {"type": ["string", "null"]},
+    "cadastral_number": {"type": ["string", "null"]},
+    "area_sqm": {"type": ["number", "null"]},
+    "pledge_value": {"type": ["string", "null"]},
+    "validity_period": {"type": ["string", "null"]},
+    "confidence": {
+      "type": "object",
+      "properties": {
+        "contract_number": {"type": "number"},
+        "contract_date": {"type": "number"},
+        "pledgee": {"type": "number"},
+        "pledgor": {"type": "number"},
+        "pledgor_inn": {"type": "number"},
+        "pledge_subject": {"type": "number"},
+        "cadastral_number": {"type": "number"},
+        "area_sqm": {"type": "number"},
+        "pledge_value": {"type": "number"},
+        "validity_period": {"type": "number"}
+      },
+      "required": ["contract_number", "contract_date", "pledgee", "pledgor",
+                    "pledgor_inn", "pledge_subject", "cadastral_number",
+                    "area_sqm", "pledge_value", "validity_period"]
+    }
+  },
+  "required": ["contract_number", "contract_date", "pledgee", "pledgor",
+                "pledgor_inn", "pledge_subject", "cadastral_number",
+                "area_sqm", "pledge_value", "validity_period", "confidence"]
+}
