@@ -4,7 +4,7 @@ services:
       context: .
       dockerfile: Dockerfile
       args:
-        EXTRA_GROUPS: "dev,storage,llm,rag"
+        EXTRA_GROUPS: "dev,storage,llm,rag,pii"
     ports:
       - "8080:8080"
     env_file: .env
