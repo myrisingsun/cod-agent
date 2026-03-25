@@ -13,6 +13,7 @@ from app.auth.models import User  # noqa: F401
 from app.models.package import Package  # noqa: F401
 from app.models.extraction_result import ExtractionResult  # noqa: F401
 from app.models.audit_log import AuditLog  # noqa: F401
+from app.models.chat_message import ChatMessage  # noqa: F401
 
 config = context.config
 if config.config_file_name is not None:

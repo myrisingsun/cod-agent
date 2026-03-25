@@ -5,6 +5,7 @@ from app.api.routes_health import router as health_router
 from app.auth.routes import router as auth_router
 from app.api.routes_packages import router as packages_router
 from app.api.routes_extraction import router as extraction_router
+from app.api.routes_chat import router as chat_router
 
 app = FastAPI(
     title="КОД-агент",
@@ -24,3 +25,4 @@ app.include_router(health_router)
 app.include_router(auth_router)
 app.include_router(packages_router)
 app.include_router(extraction_router)
+app.include_router(chat_router)

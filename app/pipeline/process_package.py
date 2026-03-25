@@ -12,6 +12,8 @@ from app.pii.factory import get_pii_filter
 from app.llm.factory import get_llm_client
 from app.rag.factory import get_retriever
 from app.extraction.factory import get_extractor
+from app.pipeline.chunker import chunk_text
+from app.schemas.document import ParsedDocument
 from app.config import settings
 
 
@@ -35,7 +37,6 @@ async def process_package(package_id: uuid.UUID, db: AsyncSession) -> None:
 
         # Step 3: PII filter (noop in dev)
         pii_filter = get_pii_filter(settings)
-        from app.schemas.document import ParsedDocument
         clean_text = pii_filter.filter(parsed.text)
         parsed_clean = ParsedDocument(
             text=clean_text,
@@ -44,13 +45,18 @@ async def process_package(package_id: uuid.UUID, db: AsyncSession) -> None:
             metadata=parsed.metadata,
         )
 
-        # Step 4: LLM extraction (Sprint 3)
+        # Step 4: RAG indexing — chunk and store in current_packages collection
+        retriever = get_retriever(settings)
+        chunks = chunk_text(clean_text)
+        chunk_meta = [{"package_id": str(package_id), "filename": package.filename} for _ in chunks]
+        await retriever.index(chunks, collection="current_packages", metadata=chunk_meta)
+
+        # Step 5: LLM extraction (retriever supplies few-shot from reference_templates)
         llm_client = get_llm_client(settings)
-        retriever = get_retriever(settings)  # NullRetriever until Sprint 4
         extractor = get_extractor(settings, llm_client, retriever)
         result = await extractor.extract(parsed_clean)
 
-        # Step 5: persist ExtractionResult
+        # Step 6: persist ExtractionResult
         now = datetime.now(timezone.utc)
         db_result = ExtractionResultModel(
             package_id=package_id,
