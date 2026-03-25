@@ -17,17 +17,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
 
-  // On mount: try to refresh session via httpOnly cookie
+  // On mount: try to restore session via httpOnly refresh cookie
   useEffect(() => {
+    let cancelled = false
     axios
       .post('/api/auth/refresh', {}, { withCredentials: true })
       .then(({ data }) => {
+        if (cancelled) return
         setAccessToken(data.access_token)
         return getMe()
       })
-      .then(setUser)
+      .then((user) => {
+        if (cancelled || !user) return
+        setUser(user)
+      })
       .catch(() => {})
-      .finally(() => setLoading(false))
+      .finally(() => {
+        if (!cancelled) setLoading(false)
+      })
+    // Cleanup: StrictMode fires this twice in dev — cancel the first run
+    return () => { cancelled = true }
   }, [])
 
   async function signIn(token: string) {

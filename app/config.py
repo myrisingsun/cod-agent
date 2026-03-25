@@ -1,4 +1,8 @@
+import os
+
 from pydantic_settings import BaseSettings
+
+_env_file = os.environ.get("ENV_FILE", ".env")
 
 
 class Settings(BaseSettings):
@@ -21,7 +25,7 @@ class Settings(BaseSettings):
     pii_filter: str = "noop"
     queue_backend: str = "background_tasks"
 
-    model_config = {"env_file": ".env", "env_file_encoding": "utf-8", "extra": "ignore"}
+    model_config = {"env_file": _env_file, "env_file_encoding": "utf-8", "extra": "ignore"}
 
 
 settings = Settings()

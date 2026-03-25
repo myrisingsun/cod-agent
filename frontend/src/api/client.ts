@@ -28,7 +28,8 @@ client.interceptors.request.use((config) => {
 
 // Auto-refresh on 401
 let _refreshing = false
-let _refreshQueue: Array<(token: string) => void> = []
+type QueueEntry = { resolve: (token: string) => void; reject: (err: unknown) => void }
+let _refreshQueue: QueueEntry[] = []
 
 client.interceptors.response.use(
   (res) => res,
@@ -38,11 +39,14 @@ client.interceptors.response.use(
       original._retry = true
 
       if (_refreshing) {
-        // Wait for the in-flight refresh
-        return new Promise((resolve) => {
-          _refreshQueue.push((token) => {
-            original.headers.Authorization = `Bearer ${token}`
-            resolve(client(original))
+        // Wait for the in-flight refresh; reject if it fails
+        return new Promise((resolve, reject) => {
+          _refreshQueue.push({
+            resolve: (token) => {
+              original.headers.Authorization = `Bearer ${token}`
+              resolve(client(original))
+            },
+            reject,
           })
         })
       }
@@ -56,12 +60,15 @@ client.interceptors.response.use(
         )
         const newToken: string = data.access_token
         setAccessToken(newToken)
-        _refreshQueue.forEach((cb) => cb(newToken))
+        _refreshQueue.forEach(({ resolve }) => resolve(newToken))
         _refreshQueue = []
         original.headers.Authorization = `Bearer ${newToken}`
         return client(original)
-      } catch {
+      } catch (refreshError) {
         setAccessToken(null)
+        // Reject all queued requests so their promises settle (don't hang)
+        _refreshQueue.forEach(({ reject }) => reject(refreshError))
+        _refreshQueue = []
         window.location.href = '/login'
         return Promise.reject(error)
       } finally {

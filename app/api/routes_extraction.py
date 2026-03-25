@@ -81,5 +81,5 @@ async def retry_extraction(
     package.updated_at = datetime.now(timezone.utc)
     await db.commit()
 
-    background_tasks.add_task(process_package, package_id, db)
+    background_tasks.add_task(process_package, package_id)
     return {"status": "accepted", "package_id": str(package_id)}

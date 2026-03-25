@@ -84,9 +84,9 @@ class QdrantRetriever:
             return []
 
         vector = self._embed([query])[0]
-        hits = self._client.search(
+        response = self._client.query_points(
             collection_name=collection,
-            query_vector=vector,
+            query=vector,
             limit=top_k,
         )
         return [
@@ -95,5 +95,5 @@ class QdrantRetriever:
                 score=hit.score,
                 metadata={k: v for k, v in hit.payload.items() if k != "text"},
             )
-            for hit in hits
+            for hit in response.points
         ]

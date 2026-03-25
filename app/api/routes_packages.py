@@ -47,7 +47,7 @@ async def upload_package(
     storage = get_storage(settings)
     await storage.save_file(str(package.id), content, file.filename)
 
-    background_tasks.add_task(process_package, package.id, db)
+    background_tasks.add_task(process_package, package.id)
 
     return PackageResponse.model_validate(package)
 

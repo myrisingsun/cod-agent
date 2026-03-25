@@ -2,8 +2,6 @@
 import uuid
 from datetime import datetime, timezone
 
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from app.models.package import Package
 from app.models.extraction_result import ExtractionResult as ExtractionResultModel
 from app.storage.factory import get_storage
@@ -15,9 +13,15 @@ from app.extraction.factory import get_extractor
 from app.pipeline.chunker import chunk_text
 from app.schemas.document import ParsedDocument
 from app.config import settings
+from app.database import async_session
 
 
-async def process_package(package_id: uuid.UUID, db: AsyncSession) -> None:
+async def process_package(package_id: uuid.UUID) -> None:
+    async with async_session() as db:
+        await _run(package_id, db)
+
+
+async def _run(package_id: uuid.UUID, db) -> None:
     package = await db.get(Package, package_id)
     if package is None:
         return
