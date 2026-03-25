@@ -8,6 +8,7 @@ from enum import Enum
 class PackageStatus(str, Enum):
     RECEIVED = "received"
     PROCESSING = "processing"
+    PARSED = "parsed"
     DONE = "done"
     ERROR = "error"
 
