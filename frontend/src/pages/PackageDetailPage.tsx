@@ -126,7 +126,7 @@ export function PackageDetailPage() {
         )}
 
         {/* Extraction results */}
-        {pkg.status === 'done' && extraction && (
+        {pkg.status === 'done' && pkg.document_type !== 'not_pledge' && extraction && (
           <div>
             <h2 className="text-base font-semibold text-gray-900 mb-3">
               Извлечённые поля
@@ -138,6 +138,14 @@ export function PackageDetailPage() {
           </div>
         )}
 
+        {pkg.status === 'done' && pkg.document_type === 'not_pledge' && (
+          <div className="bg-yellow-50 border border-yellow-300 rounded-xl px-4 py-4 text-sm text-yellow-800">
+            <strong>Документ не является залоговым договором.</strong> Модель не обнаружила характерных
+            полей: залогодержатель, залогодатель, предмет залога, кадастровый номер.
+            Загрузите корректный договор залога недвижимости.
+          </div>
+        )}
+
         {pkg.status === 'error' && (
           <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-4 text-sm text-red-700">
             Ошибка при обработке документа. Проверьте формат файла и попробуйте снова.
@@ -145,7 +153,7 @@ export function PackageDetailPage() {
         )}
 
         {/* Q&A Chat */}
-        {pkg.status === 'done' && (
+        {pkg.status === 'done' && pkg.document_type !== 'not_pledge' && (
           <div>
             <h2 className="text-base font-semibold text-gray-900 mb-3">Вопросы по документу</h2>
             <ChatWindow packageId={pkg.id} />

@@ -72,12 +72,19 @@ async def _run(package_id: uuid.UUID, db) -> None:
         )
         db.add(db_result)
 
-        # Compute overall accuracy = mean confidence of non-null fields
+        # Determine document type: if all confidences are 0 → not a pledge contract
         conf_values = [
             v for field, v in result.confidence.model_dump().items()
             if getattr(result.fields, field) is not None
         ]
-        package.accuracy = round(sum(conf_values) / len(conf_values), 4) if conf_values else None
+        all_conf = list(result.confidence.model_dump().values())
+        mean_conf = sum(all_conf) / len(all_conf) if all_conf else 0.0
+        if mean_conf < 0.1:
+            package.document_type = "not_pledge"
+            package.accuracy = None
+        else:
+            package.document_type = "pledge"
+            package.accuracy = round(sum(conf_values) / len(conf_values), 4) if conf_values else None
         package.status = "done"
         package.updated_at = now
         await db.commit()
