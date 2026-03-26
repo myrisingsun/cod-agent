@@ -16,6 +16,7 @@ class Settings(BaseSettings):
     llm_timeout: int = 120
     embedding_model: str = "BAAI/bge-m3"
     embedding_device: str = "cpu"
+    embedding_vector_size: int = 1024
     qdrant_url: str = "http://qdrant:6333"
     jwt_secret_key: str = "change-me-in-production"
     jwt_algorithm: str = "HS256"

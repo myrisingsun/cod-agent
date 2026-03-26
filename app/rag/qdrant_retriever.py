@@ -17,19 +17,17 @@ from sentence_transformers import SentenceTransformer
 
 from app.rag.base import RetrievedChunk
 
-_VECTOR_SIZE = 1024  # BGE-M3 output dimension
-
-
 @lru_cache(maxsize=1)
 def _load_model(model_name: str, device: str) -> SentenceTransformer:
     return SentenceTransformer(model_name, device=device)
 
 
 class QdrantRetriever:
-    def __init__(self, qdrant_url: str, embedding_model: str, embedding_device: str) -> None:
+    def __init__(self, qdrant_url: str, embedding_model: str, embedding_device: str, vector_size: int = 1024) -> None:
         self._client = QdrantClient(url=qdrant_url)
         self._model_name = embedding_model
         self._device = embedding_device
+        self._vector_size = vector_size
 
     def _model(self) -> SentenceTransformer:
         return _load_model(self._model_name, self._device)
@@ -42,7 +40,7 @@ class QdrantRetriever:
         if collection not in existing:
             self._client.create_collection(
                 collection_name=collection,
-                vectors_config=VectorParams(size=_VECTOR_SIZE, distance=Distance.COSINE),
+                vectors_config=VectorParams(size=self._vector_size, distance=Distance.COSINE),
             )
 
     async def index(

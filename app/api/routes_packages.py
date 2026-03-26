@@ -85,6 +85,8 @@ async def delete_package(
     package = await db.get(Package, package_id)
     if package is None or package.user_id != current_user.id:
         raise HTTPException(status_code=404, detail="Package not found")
+    if package.status == "processing":
+        raise HTTPException(status_code=409, detail="Cannot delete a package that is currently being processed")
 
     try:
         storage = get_storage(settings)

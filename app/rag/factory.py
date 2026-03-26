@@ -9,6 +9,7 @@ def get_retriever(settings: Settings) -> BaseRetriever:
             qdrant_url=settings.qdrant_url,
             embedding_model=settings.embedding_model,
             embedding_device=settings.embedding_device,
+            vector_size=settings.embedding_vector_size,
         )
     except ImportError:
         # sentence-transformers / qdrant-client not installed (Sprint 3 and earlier)

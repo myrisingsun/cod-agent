@@ -105,12 +105,14 @@ export function DashboardPage() {
                       {new Date(pkg.created_at).toLocaleDateString('ru-RU')}
                     </td>
                     <td className="px-4 py-3 text-right">
-                      <button
-                        onClick={(e) => handleDelete(pkg.id, e)}
-                        className="text-gray-400 hover:text-red-600 text-xs"
-                      >
-                        Удалить
-                      </button>
+                      {pkg.status !== 'processing' && pkg.status !== 'received' && (
+                        <button
+                          onClick={(e) => handleDelete(pkg.id, e)}
+                          className="text-gray-400 hover:text-red-600 text-xs"
+                        >
+                          Удалить
+                        </button>
+                      )}
                     </td>
                   </tr>
                 ))}
