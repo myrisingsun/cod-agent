@@ -69,18 +69,20 @@ async def ask(
             detail=f"Package is not ready for Q&A (status={package.status})",
         )
 
-    # Retrieve relevant chunks
+    # Retrieve chunks belonging only to this package
     retriever = get_retriever(settings)
-    chunks = await retriever.retrieve(
+    pkg_chunks = await retriever.retrieve(
         query=body.question,
         collection="current_packages",
         top_k=_TOP_K,
+        filter_metadata={"package_id": str(package_id)},
     )
 
-    # Filter chunks belonging to this package
-    pkg_chunks = [c for c in chunks if c.metadata.get("package_id") == str(package_id)]
     if not pkg_chunks:
-        pkg_chunks = chunks  # fallback: use all top-k results
+        raise HTTPException(
+            status_code=404,
+            detail="No indexed content found for this package. Try re-processing.",
+        )
 
     context_text = "\n\n---\n\n".join(c.text for c in pkg_chunks)
     user_prompt = f"Фрагменты документа:\n{context_text}\n\nВопрос: {body.question}"

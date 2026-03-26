@@ -4,7 +4,6 @@ from __future__ import annotations
 import asyncio
 import uuid
 from functools import lru_cache
-from typing import Any
 
 from qdrant_client import QdrantClient
 from qdrant_client.models import (
@@ -12,6 +11,8 @@ from qdrant_client.models import (
     VectorParams,
     PointStruct,
     Filter,
+    FieldCondition,
+    MatchValue,
 )
 from sentence_transformers import SentenceTransformer
 
@@ -72,20 +73,36 @@ class QdrantRetriever:
         query: str,
         collection: str,
         top_k: int = 5,
+        filter_metadata: dict | None = None,
     ) -> list[RetrievedChunk]:
         loop = asyncio.get_event_loop()
-        return await loop.run_in_executor(None, self._retrieve_sync, query, collection, top_k)
+        return await loop.run_in_executor(
+            None, self._retrieve_sync, query, collection, top_k, filter_metadata
+        )
 
-    def _retrieve_sync(self, query: str, collection: str, top_k: int) -> list[RetrievedChunk]:
+    def _retrieve_sync(
+        self, query: str, collection: str, top_k: int, filter_metadata: dict | None
+    ) -> list[RetrievedChunk]:
         existing = {c.name for c in self._client.get_collections().collections}
         if collection not in existing:
             return []
 
         vector = self._embed([query])[0]
+
+        query_filter: Filter | None = None
+        if filter_metadata:
+            query_filter = Filter(
+                must=[
+                    FieldCondition(key=k, match=MatchValue(value=v))
+                    for k, v in filter_metadata.items()
+                ]
+            )
+
         response = self._client.query_points(
             collection_name=collection,
             query=vector,
             limit=top_k,
+            query_filter=query_filter,
         )
         return [
             RetrievedChunk(
@@ -95,3 +112,18 @@ class QdrantRetriever:
             )
             for hit in response.points
         ]
+
+    async def delete_by_filter(self, collection: str, package_id: str) -> None:
+        loop = asyncio.get_event_loop()
+        await loop.run_in_executor(None, self._delete_by_filter_sync, collection, package_id)
+
+    def _delete_by_filter_sync(self, collection: str, package_id: str) -> None:
+        existing = {c.name for c in self._client.get_collections().collections}
+        if collection not in existing:
+            return
+        self._client.delete(
+            collection_name=collection,
+            points_selector=Filter(
+                must=[FieldCondition(key="package_id", match=MatchValue(value=package_id))]
+            ),
+        )
